@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kantin Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { width: 100%; max-width: 350px; padding: 20px; }
+        h1 { font-size: 24px; margin-bottom: 10px; text-align: center; }
+        p { color: #666; text-align: center; margin-bottom: 30px; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #f0f0f0; outline: none; font-size: 14px; }
+        input:focus { border-color: #3b82f6; }
+        button { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: none; font-weight: 600; cursor: pointer; }
+        button:hover { background: #333; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>KantinKu</h1>
+        <p>Masuk untuk mulai memesan</p>
+        
+        <input type="text" id="nama" placeholder="Masukkan Nama Anda">
+        <select id="role">
+            <option value="siswa">Siswa (Pembeli)</option>
+            <option value="kantin">Penjual (Admin)</option>
+        </select>
+        <button onclick="login()">Masuk Sekarang</button>
+    </div>
+
+    <script>
+        function login() {
+            const nama = document.getElementById('nama').value;
+            const role = document.getElementById('role').value;
+
+            if (!nama && role === 'siswa') return alert("Nama harus diisi!");
+            
+            // Simpan sesi user
+            const session = { nama: nama || "Admin Kantin", role: role };
+            localStorage.setItem('userSession', JSON.stringify(session));
+
+            // Redirect sesuai peran
+            if (role === 'siswa') window.location.href = 'siswa.html';
+            else window.location.href = 'kantin.html';
+        }
+    </script>
+</body>
+</html>

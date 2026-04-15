@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Siswa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* style.css */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #ffffff; color: #1a1a1a; padding: 20px; }
+
+        header { border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Pencarian & Kategori */
+        .filter-section { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type="text"] { padding: 10px; border: 2px solid #f0f0f0; outline: none; flex-grow: 1; }
+        input[type="text"]:focus { border-color: #3b82f6; }
+        .btn-filter { padding: 8px 15px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 13px; }
+        .btn-filter.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+
+        /* Grid Layout */
+        .grid { display: grid; grid-template-columns: 1fr 350px; gap: 40px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+        /* Menu Card */
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
+        .btn-add { padding: 8px 16px; border: 2px solid #3b82f6; background: transparent; color: #3b82f6; font-weight: 600; cursor: pointer; }
+        .btn-add:hover { background: #3b82f6; color: white; }
+
+        /* Toast Notification (Notifikasi Halus) */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .toast { background: #1a1a1a; color: white; padding: 12px 25px; border-radius: 4px; margin-top: 10px; font-size: 14px; animation: slideIn 0.3s ease-out; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Status Box */
+        .status-box { padding: 15px; background: #f9f9f9; border-left: 4px solid #3b82f6; margin-bottom: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div> 
+    
+    <header>
+        <div>
+            <h1>Kantin Pintar</h1>
+            <div id="display-nama" style="color:#3b82f6; font-weight:600; font-size:14px;"></div>
+        </div>
+        <a href="index.html" style="text-decoration:none; color:#666;">Logout</a>
+    </header>
+
+    <div class="grid">
+        <section>
+            <div class="filter-section">
+                <input type="text" id="search-input" placeholder="Cari makanan atau minuman..." onkeyup="filterMenu()">
+            </div>
+            <div class="filter-section">
+                <button class="btn-filter active" onclick="setCategory('Semua', this)">Semua</button>
+                <button class="btn-filter" onclick="setCategory('Makanan', this)">Makanan</button>
+                <button class="btn-filter" onclick="setCategory('Minuman', this)">Minuman</button>
+            </div>
+            <div id="menu-container"></div>
+        </section>
+
+        <section>
+            <h2>Keranjang</h2>
+            <div id="cart-items" style="margin-top:15px;"></div>
+            <div id="cart-total" style="margin-top:20px; font-weight:600; border-top:2px solid #f0f0f0; padding-top:10px;">Total: Rp 0</div>
+            <button onclick="checkout()" style="width:100%; padding:15px; background:#1a1a1a; color:white; border:none; margin-top:15px; cursor:pointer; font-weight:600;">Checkout</button>
+
+            <h2 style="margin-top: 40px;">Status Pesanan Saya</h2>
+            <div id="my-orders" style="margin-top:15px;">
+                <p style="color:#999">Belum ada pesanan aktif.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const session = JSON.parse(localStorage.getItem('userSession'));
+        if (!session) window.location.href = 'index.html';
+        document.getElementById('display-nama').innerText = "Akun: " + session.nama;
+
+        const menuData = [
+            { id: 1, nama: "Nasi Goreng", harga: 12000, kategori: "Makanan" },
+            { id: 2, nama: "Mie Ayam", harga: 10000, kategori: "Makanan" },
+            { id: 3, nama: "Es Jeruk", harga: 5000, kategori: "Minuman" },
+            { id: 4, nama: "Teh Manis", harga: 3000, kategori: "Minuman" },
+            { id: 5, nama: "Ayam Geprek", harga: 15000, kategori: "Makanan" }
+        ];
+
+        let cart = [];
+        let currentCategory = 'Semua';
+
+        // Fungsi Notifikasi Halus (Toast)
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function renderMenu(filterText = '') {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            const filtered = menuData.filter(item => {
+                const matchSearch = item.nama.toLowerCase().includes(filterText.toLowerCase());
+                const matchCategory = currentCategory === 'Semua' || item.kategori === currentCategory;
+                return matchSearch && matchCategory;
+            });
+
+            filtered.forEach(item => {
+                container.innerHTML += `
+                    <div class="menu-item">
+                        <div><b>${item.nama}</b><br><small style="color:#666">${item.kategori} | Rp ${item.harga.toLocaleString()}</small></div>
+                        <button class="btn-add" onclick="addToCart(${item.id})">Tambah</button>
+                    </div>`;
+            });
+        }
+
+        function filterMenu() {
+            const text = document.getElementById('search-input').value;
+            renderMenu(text);
+        }
+
+        function setCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenu(document.getElementById('search-input').value);
+        }
+
+        function addToCart(id) {
+            const item = menuData.find(m => m.id === id);
+            const exist = cart.find(c => c.id === id);
+            if (exist) exist.qty++; else cart.push({...item, qty: 1});
+            renderCart();
+            showToast(`${item.nama} ditambah ke keranjang`);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = cart.length ? '' : '<p style="color:#999">Keranjang kosong</p>';
+            let total = 0;
+            cart.forEach(item => {
+                total += (item.harga * item.qty);
+                container.innerHTML += `<div style="display:flex; justify-content:space-between; font-size:14px; margin-bottom:5px;"><span>${item.nama} x${item.qty}</span><span>Rp ${(item.harga * item.qty).toLocaleString()}</span></div>`;
+            });
+            document.getElementById('cart-total').innerText = `Total: Rp ${total.toLocaleString()}`;
+        }
+
+        function checkout() {
+            if (!cart.length) return showToast("Keranjang masih kosong!");
+            const orders = JSON.parse(localStorage.getItem('dataPesanan')) || [];
+            orders.push({
+                id: "ORD-" + Date.now().toString().slice(-4),
+                namaPemesan: session.nama,
+                items: cart,
+                status: "Masuk",
+                waktu: new Date().toLocaleTimeString()
+            });
+            localStorage.setItem('dataPesanan', JSON.stringify(orders));
+            cart = []; 
+            renderCart();
+            renderMyOrders(); // Panggil fungsi ini agar status langsung muncul setelah pesan
+            showToast("Pesanan berhasil dikirim!");
+        }
+
+        // FUNGSI BARU: Menampilkan Status Pesanan Khusus Siswa Ini
+        function renderMyOrders() {
+            const container = document.getElementById('my-orders');
+            const allOrders = JSON.parse(localStorage.getItem('dataPesanan')) || [];
+            
+            // Filter: Hanya ambil pesanan yang namanya sama dengan user yang login
+            const myOrders = allOrders.filter(order => order.namaPemesan === session.nama);
+
+            if (myOrders.length === 0) {
+                container.innerHTML = '<p style="color:#999">Belum ada pesanan aktif.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            // Tampilkan dari yang paling baru (di-reverse)
+            myOrders.reverse().forEach(o => {
+                // Rangkai daftar item makanannya
+                const rincianItems = o.items.map(i => `${i.nama} (x${i.qty})`).join(', ');
+                
+                container.innerHTML += `
+                    <div class="status-box">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <b>#${o.id}</b>
+                            <span style="color:#3b82f6; font-weight:bold;">${o.status}</span>
+                        </div>
+                        <small style="color:#666;">Waktu: ${o.waktu}</small><br>
+                        <small>${rincianItems}</small>
+                    </div>
+                `;
+            });
+        }
+
+        // Inisialisasi awal saat halaman dimuat
+        renderMenu();
+        renderMyOrders();
+
+        // Refresh otomatis setiap 5 detik agar siswa tahu jika penjual merubah status
+        setInterval(renderMyOrders, 5000);
+    </script>
+</body>
+</html>

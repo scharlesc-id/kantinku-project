@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kantin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: #ffffff; padding: 20px; }
+        header { border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .order-row { padding: 20px 0; border-bottom: 2px solid #f0f0f0; }
+        .order-meta { font-size: 14px; margin-bottom: 10px; }
+        .order-meta b { color: #3b82f6; text-transform: capitalize; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-status { padding: 8px 12px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .btn-status.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Daftar Pesanan Sekolah</h1>
+        <a href="index.html" style="text-decoration:none; color:#666; font-size:14px;">Keluar</a>
+    </header>
+
+    <div id="order-list"></div>
+
+    <script>
+        const session = JSON.parse(localStorage.getItem('userSession'));
+        if (!session || session.role !== 'kantin') window.location.href = 'index.html';
+
+        function renderOrders() {
+            const container = document.getElementById('order-list');
+            const orders = JSON.parse(localStorage.getItem('dataPesanan')) || [];
+            
+            container.innerHTML = orders.length ? '' : 'Tidak ada pesanan.';
+            orders.reverse().forEach((order, index) => {
+                const originalIndex = orders.length - 1 - index;
+                container.innerHTML += `
+                    <div class="order-row">
+                        <div class="order-meta">
+                            <b>${order.namaPemesan}</b> (#${order.id}) <br>
+                            <small>${order.waktu}</small>
+                        </div>
+                        <p style="font-size:14px;">${order.items.map(i => i.nama + ' x' + i.qty).join(', ')}</p>
+                        <div class="btn-group">
+                            <button class="btn-status ${order.status === 'Masuk' ? 'active' : ''}" onclick="updateStatus(${originalIndex}, 'Masuk')">Masuk</button>
+                            <button class="btn-status ${order.status === 'Proses' ? 'active' : ''}" onclick="updateStatus(${originalIndex}, 'Proses')">Proses</button>
+                            <button class="btn-status ${order.status === 'Siap' ? 'active' : ''}" onclick="updateStatus(${originalIndex}, 'Siap')">Siap</button>
+                            <button class="btn-status" onclick="deleteOrder(${originalIndex})">Selesai</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function updateStatus(index, newStatus) {
+            let orders = JSON.parse(localStorage.getItem('dataPesanan'));
+            orders[index].status = newStatus;
+            localStorage.setItem('dataPesanan', JSON.stringify(orders));
+            renderOrders();
+        }
+
+        function deleteOrder(index) {
+            let orders = JSON.parse(localStorage.getItem('dataPesanan'));
+            orders.splice(index, 1);
+            localStorage.setItem('dataPesanan', JSON.stringify(orders));
+            renderOrders();
+        }
+
+        renderOrders();
+        setInterval(renderOrders, 5000);
+    </script>
+</body>
+</html>
