@@ -76,16 +76,6 @@
 
             if (role === 'siswa') window.location.href = 'siswa.html';
             else window.location.href = 'kantin.html';
-            
-            if (!nama && role === 'siswa') return alert("Nama harus diisi!");
-            
-            // Simpan sesi user
-            const session = { nama: nama || "Admin Kantin", role: role };
-            localStorage.setItem('userSession', JSON.stringify(session));
-
-            // Redirect sesuai peran
-            if (role === 'siswa') window.location.href = 'siswa.html';
-            else window.location.href = 'kantin.html';
         }
     </script>
 </body>
