@@ -4,37 +4,157 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kantin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #ffffff; padding: 20px; }
-        header { border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        body { background-color: #f3f4f6; color: #111827; padding: 30px 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
         
-        .order-row { padding: 20px 0; border-bottom: 2px solid #f0f0f0; }
-        .order-meta { font-size: 14px; margin-bottom: 10px; }
-        .order-meta b { color: #3b82f6; text-transform: capitalize; }
+        header { 
+            background: white; padding: 20px 30px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
+        header h1 { font-size: 22px; }
+        .logout-btn { color: #ef4444; text-decoration: none; font-weight: 500; font-size: 14px; }
         
-        .btn-group { display: flex; gap: 8px; margin-top: 10px; }
-        .btn-status { padding: 8px 12px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-status.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .order-row { 
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03); margin-bottom: 15px; 
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-meta b { color: #0092dd; text-transform: capitalize; font-size: 16px; }
+        .order-meta small { color: #6b7280; display: block; margin-top: 4px; }
+        
+        .items-list { font-size: 15px; color: #374151; background: #f9fafb; padding: 12px; border-radius: 8px; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap; }
+        .btn-status { 
+            padding: 8px 16px; border: 1px solid #d1d5db; background: white; 
+            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: #374151;
+            transition: all 0.2s;
+        }
+        .btn-status:hover { background: #f3f4f6; }
+        .btn-status.active { background: #0092dd; color: white; border-color: #0092dd; }
+        .btn-selesai { background: #10b981; color: white; border-color: #10b981; }
+        .btn-selesai:hover { background: #059669; color: white; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Daftar Pesanan Siswa</h1>
+            <a href="index.html" class="logout-btn">Keluar</a>
+        </header>
 
-    <header>
-        <h1>Daftar Pesanan Sekolah</h1>
-        <a href="index.html" style="text-decoration:none; color:#666; font-size:14px;">Keluar</a>
-    </header>
+        <div id="order-list"></div>
+    </div>
 
-    <div id="order-list"></div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    <script>
         const session = JSON.parse(localStorage.getItem('userSession'));
         if (!session || session.role !== 'kantin') window.location.href = 'index.html';
 
-        function renderOrders() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUe0OyfP-PQXH38uKoFDOo5pLAwpkv10U",
+            authDomain: "kantin-cendekia-f74a6.firebaseapp.com",
+            databaseURL: "https://kantin-cendekia-f74a6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kantin-cendekia-f74a6",
+            storageBucket: "kantin-cendekia-f74a6.firebasestorage.app",
+            messagingSenderId: "525741462679",
+            appId: "1:525741462679:web:71d3b689ee53bae9ee05d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const pesananRef = ref(database, 'dataPesanan');
+
+        // Mengambil pesanan secara REAL-TIME dari cloud database
+        onValue(pesananRef, (snapshot) => {
             const container = document.getElementById('order-list');
-            const orders = JSON.parse(localStorage.getItem('dataPesanan')) || [];
+            const data = snapshot.val();
+            
+            if (!data) {
+                container.innerHTML = '<p style="text-align:center; color:#6b7280; margin-top:40px;">Belum ada pesanan masuk.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            // Mengubah object Firebase menjadi array agar bisa dibalik (pesanan terbaru di atas)
+            const keys = Object.keys(data).reverse();
+            
+            keys.forEach((key) => {
+                const order = data[key];
+                
+                const row = document.createElement('div');
+                row.className = 'order-row';
+                
+                row.innerHTML = `
+                    <div class="order-header">
+                        <div class="order-meta">
+                            <b>${order.namaPemesan}</b> <span style="color:#9ca3af; font-size:14px;">(#${order.id})</span>
+                            <small>${order.waktu}</small>
+                        </div>
+                    </div>
+                    <div class="items-list">${order.items.map(i => `<strong>${i.nama}</strong> x${i.qty}`).join(' &bull; ')}</div>
+                `;
+
+                // Wrapper tombol aksi
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'btn-group';
+
+                // Tombol Masuk
+                const btnMasuk = document.createElement('button');
+                btnMasuk.className = `btn-status ${order.status === 'Masuk' ? 'active' : ''}`;
+                btnMasuk.innerText = 'Masuk';
+                btnMasuk.onclick = () => updateStatus(key, 'Masuk');
+
+                // Tombol Proses
+                const btnProses = document.createElement('button');
+                btnProses.className = `btn-status ${order.status === 'Proses' ? 'active' : ''}`;
+                btnProses.innerText = 'Proses';
+                btnProses.onclick = () => updateStatus(key, 'Proses');
+
+                // Tombol Siap
+                const btnSiap = document.createElement('button');
+                btnSiap.className = `btn-status ${order.status === 'Siap' ? 'active' : ''}`;
+                btnSiap.innerText = 'Siap';
+                btnSiap.onclick = () => updateStatus(key, 'Siap');
+
+                // Tombol Selesai (Hapus data)
+                const btnSelesai = document.createElement('button');
+                btnSelesai.className = 'btn-status btn-selesai';
+                btnSelesai.innerText = 'Selesai';
+                btnSelesai.onclick = () => deleteOrder(key);
+
+                btnGroup.appendChild(btnMasuk);
+                btnGroup.appendChild(btnProses);
+                btnGroup.appendChild(btnSiap);
+                btnGroup.appendChild(btnSelesai);
+                
+                row.appendChild(btnGroup);
+                container.appendChild(row);
+            });
+        });
+
+        function updateStatus(key, newStatus) {
+            const singleOrderRef = ref(database, `dataPesanan/${key}`);
+            update(singleOrderRef, { status: newStatus });
+        }
+
+        function deleteOrder(key) {
+            if(confirm('Tandai pesanan ini sebagai selesai?')) {
+                const singleOrderRef = ref(database, `dataPesanan/${key}`);
+                remove(singleOrderRef);
+            }
+        }
+    </script>
+</body>
+</html>            const orders = JSON.parse(localStorage.getItem('dataPesanan')) || [];
             
             container.innerHTML = orders.length ? '' : 'Tidak ada pesanan.';
             orders.reverse().forEach((order, index) => {
