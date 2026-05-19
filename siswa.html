@@ -4,37 +4,293 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu Siswa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* style.css */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #ffffff; color: #1a1a1a; padding: 20px; }
+        body { background-color: #f3f4f6; color: #111827; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        header { border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        header { 
+            background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+        }
+        .header-title h1 { font-size: 22px; margin-bottom: 4px; }
+        .header-title div { color: #0092dd; font-weight: 500; font-size: 14px; }
+        .logout-btn { color: #ef4444; text-decoration: none; font-size: 14px; font-weight: 500; }
 
         /* Pencarian & Kategori */
         .filter-section { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        input[type="text"] { padding: 10px; border: 2px solid #f0f0f0; outline: none; flex-grow: 1; }
-        input[type="text"]:focus { border-color: #3b82f6; }
-        .btn-filter { padding: 8px 15px; border: 1px solid #ddd; background: white; cursor: pointer; font-size: 13px; }
-        .btn-filter.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+        input[type="text"] { 
+            padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; 
+            outline: none; flex-grow: 1; font-size: 14px; transition: 0.2s;
+        }
+        input[type="text"]:focus { border-color: #0092dd; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        .btn-filter { 
+            padding: 10px 18px; border: 1px solid #d1d5db; background: white; 
+            border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; color: #374151; transition: 0.2s;
+        }
+        .btn-filter:hover { background: #f9fafb; }
+        .btn-filter.active { background: #111827; color: white; border-color: #111827; }
 
         /* Grid Layout */
-        .grid { display: grid; grid-template-columns: 1fr 350px; gap: 40px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .grid { display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start; }
+        @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
 
         /* Menu Card */
-        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f0f0f0; }
-        .btn-add { padding: 8px 16px; border: 2px solid #3b82f6; background: transparent; color: #3b82f6; font-weight: 600; cursor: pointer; }
-        .btn-add:hover { background: #3b82f6; color: white; }
+        .menu-list { display: flex; flex-direction: column; gap: 12px; }
+        .menu-item { 
+            background: white; display: flex; justify-content: space-between; align-items: center; 
+            padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .menu-info b { font-size: 16px; display: block; margin-bottom: 4px; }
+        .menu-info small { color: #6b7280; font-size: 13px; }
+        
+        .btn-add { 
+            padding: 8px 20px; border: 1.5px solid #0092dd; border-radius: 20px;
+            background: transparent; color: #0092dd; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .btn-add:hover { background: #0092dd; color: white; }
 
-        /* Toast Notification (Notifikasi Halus) */
+        /* Sidebar: Cart & Orders */
+        .sidebar-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .sidebar-card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f3f4f6; }
+        
+        .cart-item { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 12px; color: #374151; }
+        #cart-total { font-weight: 600; font-size: 16px; border-top: 1px dashed #d1d5db; padding-top: 15px; margin-top: 15px; }
+        
+        .btn-checkout { 
+            width: 100%; padding: 14px; background: #0092dd; color: white; border-radius: 8px;
+            border: none; margin-top: 15px; cursor: pointer; font-weight: 600; font-size: 15px; transition: 0.2s;
+        }
+        .btn-checkout:hover { background: #2563eb; }
+
+        /* Status Box */
+        .status-box { padding: 15px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #0092dd; margin-bottom: 12px; font-size: 14px; }
+        
+        /* Toast Notification */
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-        .toast { background: #1a1a1a; color: white; padding: 12px 25px; border-radius: 4px; margin-top: 10px; font-size: 14px; animation: slideIn 0.3s ease-out; }
+        .toast { background: #111827; color: white; padding: 14px 24px; border-radius: 8px; margin-top: 10px; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div> 
+    
+    <div class="container">
+        <header>
+            <div class="header-title">
+                <h1>Kantin Cendekia</h1>
+                <div id="display-nama"></div>
+            </div>
+            <a href="index.html" class="logout-btn">Keluar</a>
+        </header>
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        <div class="grid">
+            <section>
+                <div class="filter-section">
+                    <input type="text" id="search-input" placeholder="Cari makanan atau minuman..." onkeyup="filterMenu()">
+                </div>
+                <div class="filter-section">
+                    <button class="btn-filter active" id="filter-all">Semua</button>
+                    <button class="btn-filter" id="filter-makanan">Makanan</button>
+                    <button class="btn-filter" id="filter-minuman">Minuman</button>
+                </div>
+                <div id="menu-container" class="menu-list"></div>
+            </section>
+
+            <section>
+                <div class="sidebar-card">
+                    <h2>Keranjang Belanja</h2>
+                    <div id="cart-items"></div>
+                    <div id="cart-total">Total: Rp 0</div>
+                    <button class="btn-checkout" id="btn-checkout-act">Pesan Sekarang</button>
+                </div>
+
+                <div class="sidebar-card">
+                    <h2>Status Pesanan Saya</h2>
+                    <div id="my-orders">
+                        <p style="color:#9ca3af; font-size: 14px;">Belum ada pesanan aktif.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const session = JSON.parse(localStorage.getItem('userSession'));
+        if (!session) window.location.href = 'index.html';
+        document.getElementById('display-nama').innerText = "Akun: " + session.nama;
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUe0OyfP-PQXH38uKoFDOo5pLAwpkv10U",
+            authDomain: "kantin-cendekia-f74a6.firebaseapp.com",
+            databaseURL: "https://kantin-cendekia-f74a6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "kantin-cendekia-f74a6",
+            storageBucket: "kantin-cendekia-f74a6.firebasestorage.app",
+            messagingSenderId: "525741462679",
+            appId: "1:525741462679:web:71d3b689ee53bae9ee05d2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const pesananRef = ref(database, 'dataPesanan');
+
+        const menuData = [
+            { id: 1, nama: "Nasi Goreng", harga: 12000, kategori: "Makanan" },
+            { id: 2, nama: "Mie Ayam", harga: 10000, kategori: "Makanan" },
+            { id: 3, nama: "Es Jeruk", harga: 5000, kategori: "Minuman" },
+            { id: 4, nama: "Teh Manis", harga: 3000, kategori: "Minuman" },
+            { id: 5, nama: "Ayam Geprek", harga: 15000, kategori: "Makanan" }
+        ];
+
+        let cart = [];
+        let currentCategory = 'Semua';
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function renderMenu(filterText = '') {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            const filtered = menuData.filter(item => {
+                const matchSearch = item.nama.toLowerCase().includes(filterText.toLowerCase());
+                const matchCategory = currentCategory === 'Semua' || item.kategori === currentCategory;
+                return matchSearch && matchCategory;
+            });
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'menu-item';
+                card.innerHTML = `
+                    <div class="menu-info">
+                        <b>${item.nama}</b>
+                        <small>${item.kategori} &bull; Rp ${item.harga.toLocaleString()}</small>
+                    </div>`;
+                
+                const btn = document.createElement('button');
+                btn.className = 'btn-add';
+                btn.innerText = '+ Tambah';
+                btn.onclick = () => addToCart(item.id);
+                
+                card.appendChild(btn);
+                container.appendChild(card);
+            });
+        }
+
+        window.filterMenu = function() {
+            const text = document.getElementById('search-input').value;
+            renderMenu(text);
+        }
+
+        function setCategory(cat, btn) {
+            currentCategory = cat;
+            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenu(document.getElementById('search-input').value);
+        }
+
+        document.getElementById('filter-all').onclick = function() { setCategory('Semua', this); };
+        document.getElementById('filter-makanan').onclick = function() { setCategory('Makanan', this); };
+        document.getElementById('filter-minuman').onclick = function() { setCategory('Minuman', this); };
+
+        function addToCart(id) {
+            const item = menuData.find(m => m.id === id);
+            const exist = cart.find(c => c.id === id);
+            if (exist) exist.qty++; else cart.push({...item, qty: 1});
+            renderCart();
+            showToast(`${item.nama} ditambah ke keranjang`);
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            container.innerHTML = cart.length ? '' : '<p style="color:#9ca3af; font-size:14px; margin-bottom:10px;">Keranjang kosong</p>';
+            let total = 0;
+            cart.forEach(item => {
+                total += (item.harga * item.qty);
+                container.innerHTML += `
+                <div class="cart-item">
+                    <span>${item.nama} <strong style="color:#0092dd">x${item.qty}</strong></span>
+                    <span>Rp ${(item.harga * item.qty).toLocaleString()}</span>
+                </div>`;
+            });
+            document.getElementById('cart-total').innerText = `Total: Rp ${total.toLocaleString()}`;
+        }
+
+        document.getElementById('btn-checkout-act').onclick = function checkout() {
+            if (!cart.length) return showToast("Keranjang masih kosong!");
+            
+            // Simpan Data Langsung Kirim ke Firebase Cloud
+            push(pesananRef, {
+                id: "ORD-" + Date.now().toString().slice(-4),
+                namaPemesan: session.nama,
+                items: cart,
+                status: "Masuk",
+                waktu: new Date().toLocaleTimeString()
+            }).then(() => {
+                cart = []; 
+                renderCart();
+                showToast("Pesanan berhasil dikirim!");
+            }).catch((err) => {
+                showToast("Gagal mengirim pesanan!");
+                console.error(err);
+            });
+        };
+
+        // Realtime memantau status pesanan saya dari Firebase
+        onValue(pesananRef, (snapshot) => {
+            const container = document.getElementById('my-orders');
+            const data = snapshot.val();
+
+            if (!data) {
+                container.innerHTML = '<p style="color:#9ca3af; font-size:14px;">Belum ada pesanan aktif.</p>';
+                return;
+            }
+
+            // Menyaring pesanan milik siswa yang sedang login
+            const myOrders = [];
+            Object.keys(data).forEach(key => {
+                if (data[key].namaPemesan === session.nama) {
+                    myOrders.push(data[key]);
+                }
+            });
+
+            if (myOrders.length === 0) {
+                container.innerHTML = '<p style="color:#9ca3af; font-size:14px;">Belum ada pesanan aktif.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            myOrders.reverse().forEach(o => {
+                const rincianItems = o.items.map(i => `${i.nama} (x${i.qty})`).join(', ');
+                container.innerHTML += `
+                    <div class="status-box">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <b style="color:#111827;">#${o.id}</b>
+                            <span style="color:#0092dd; font-weight:600; font-size:13px; background:#eff6ff; padding:2px 8px; border-radius:12px;">${o.status}</span>
+                        </div>
+                        <div style="color:#6b7280; margin-bottom:4px;">${o.waktu}</div>
+                        <div style="color:#374151;">${rincianItems}</div>
+                    </div>
+                `;
+            });
+        });
+
+        renderMenu();
+    </script>
+</body>
+</html>            to { transform: translateX(0); opacity: 1; }
         }
 
         /* Status Box */
