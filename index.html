@@ -3,23 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Kantin Digital</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Login - Kantin Cendekia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #ffffff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .login-card { width: 100%; max-width: 350px; padding: 20px; }
-        h1 { font-size: 24px; margin-bottom: 10px; text-align: center; }
-        p { color: #666; text-align: center; margin-bottom: 30px; font-size: 14px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid #f0f0f0; outline: none; font-size: 14px; }
-        input:focus { border-color: #3b82f6; }
-        button { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: none; font-weight: 600; cursor: pointer; }
-        button:hover { background: #333; }
+        body { background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { 
+            width: 100%; 
+            max-width: 380px; 
+            background: #ffffff; 
+            padding: 40px 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            text-align: center;
+        }
+        .logo { width: 80px; height: 80px; margin-bottom: 15px; border-radius: 20%; object-fit: cover; }
+        h1 { font-size: 26px; margin-bottom: 8px; color: #111827; }
+        p { color: #6b7280; margin-bottom: 30px; font-size: 14px; }
+        
+        input, select { 
+            width: 100%; 
+            padding: 14px 16px; 
+            margin-bottom: 15px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px;
+            outline: none; 
+            font-size: 14px; 
+            transition: border-color 0.2s;
+            background-color: #f9fafb;
+        }
+        input:focus, select:focus { border-color: #0092dd; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: #0092dd; 
+            color: white; 
+            border: none; 
+            border-radius: 8px;
+            font-weight: 600; 
+            font-size: 15px;
+            cursor: pointer; 
+            transition: background 0.2s, transform 0.1s; 
+        }
+        button:hover { background: #2563eb; }
+        button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
     <div class="login-card">
-        <h1>KantinKu</h1>
+        <img src="logo.png" alt="Logo Cendekia" class="logo">
+        
+        <h1>Kantin Cendekia</h1>
         <p>Masuk untuk mulai memesan</p>
         
         <input type="text" id="nama" placeholder="Masukkan Nama Anda">
@@ -35,6 +70,16 @@
             const nama = document.getElementById('nama').value;
             const role = document.getElementById('role').value;
 
+            if (!nama && role === 'siswa') return alert("Nama harus diisi!");
+            const session = { nama: nama || "Admin Kantin", role: role };
+            localStorage.setItem('userSession', JSON.stringify(session));
+
+            if (role === 'siswa') window.location.href = 'siswa.html';
+            else window.location.href = 'kantin.html';
+        }
+    </script>
+</body>
+</html>
             if (!nama && role === 'siswa') return alert("Nama harus diisi!");
             
             // Simpan sesi user
